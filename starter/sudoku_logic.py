@@ -48,6 +48,14 @@ def remove_cells(board, clues):
             board[row][col] = EMPTY
             attempts -= 1
 
+def find_incorrect_cells(board, solution):
+    incorrect = []
+    for row in range(SIZE):
+        for col in range(SIZE):
+            if board[row][col] != solution[row][col]:
+                incorrect.append([row, col])
+    return incorrect
+
 def generate_puzzle(clues=35):
     board = create_empty_board()
     fill_board(board)

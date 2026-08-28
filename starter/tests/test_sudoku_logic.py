@@ -19,6 +19,21 @@ def test_is_safe_rejects_row_column_and_box_conflicts():
     assert not sudoku_logic.is_safe(board, 1, 1, 5)
 
 
+def test_find_incorrect_cells_returns_empty_for_matching_boards():
+    solution = sudoku_logic.create_empty_board()
+
+    assert sudoku_logic.find_incorrect_cells(solution, solution) == []
+
+
+def test_find_incorrect_cells_returns_all_mismatched_coordinates():
+    solution = sudoku_logic.create_empty_board()
+    board = sudoku_logic.deep_copy(solution)
+    board[0][1] = 1
+    board[8][7] = 9
+
+    assert sudoku_logic.find_incorrect_cells(board, solution) == [[0, 1], [8, 7]]
+
+
 def test_fill_board_creates_a_valid_solution():
     board = sudoku_logic.create_empty_board()
 
