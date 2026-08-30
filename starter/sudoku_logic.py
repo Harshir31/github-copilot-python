@@ -3,6 +3,7 @@ import random
 
 SIZE = 9
 EMPTY = 0
+MAX_SOLUTIONS = 2
 
 def deep_copy(board):
     return copy.deepcopy(board)
@@ -39,14 +40,90 @@ def fill_board(board):
                 return False
     return True
 
+def _has_valid_entries(board):
+    for row in range(SIZE):
+        for col in range(SIZE):
+            value = board[row][col]
+            if value == EMPTY:
+                continue
+            board[row][col] = EMPTY
+            valid = is_safe(board, row, col, value)
+            board[row][col] = value
+            if not valid:
+                return False
+    return True
+
+def count_solutions(board):
+    if len(board) != SIZE or any(len(row) != SIZE for row in board):
+        return 0
+    if any(
+        not isinstance(cell, int) or cell < EMPTY or cell > SIZE
+        for row in board
+        for cell in row
+    ):
+        return 0
+    if not _has_valid_entries(board):
+        return 0
+
+    solution_count = 0
+
+    def search():
+        nonlocal solution_count
+        if solution_count >= MAX_SOLUTIONS:
+            return
+
+        best_cell = None
+        best_candidates = None
+        for row in range(SIZE):
+            for col in range(SIZE):
+                if board[row][col] == EMPTY:
+                    candidates = [
+                        number
+                        for number in range(1, SIZE + 1)
+                        if is_safe(board, row, col, number)
+                    ]
+                    if not candidates:
+                        return
+                    if best_candidates is None or len(candidates) < len(best_candidates):
+                        best_cell = (row, col)
+                        best_candidates = candidates
+                        if len(candidates) == 1:
+                            break
+            if best_candidates is not None and len(best_candidates) == 1:
+                break
+
+        if best_cell is None:
+            solution_count += 1
+            return
+
+        row, col = best_cell
+        for candidate in best_candidates:
+            board[row][col] = candidate
+            search()
+            board[row][col] = EMPTY
+            if solution_count >= MAX_SOLUTIONS:
+                return
+
+    search()
+    return solution_count
+
 def remove_cells(board, clues):
-    attempts = SIZE * SIZE - clues
-    while attempts > 0:
-        row = random.randrange(SIZE)
-        col = random.randrange(SIZE)
+    if not 0 <= clues <= SIZE * SIZE:
+        raise ValueError("clues must be between 0 and 81")
+
+    coordinates = [(row, col) for row in range(SIZE) for col in range(SIZE)]
+    random.shuffle(coordinates)
+    for row, col in coordinates:
+        if sum(cell != EMPTY for current_row in board for cell in current_row) <= clues:
+            return
+        value = board[row][col]
         if board[row][col] != EMPTY:
             board[row][col] = EMPTY
-            attempts -= 1
+            if count_solutions(board) != 1:
+                board[row][col] = value
+
+    if sum(cell != EMPTY for row in board for cell in row) > clues:
+        raise ValueError("could not generate a uniquely solvable puzzle with this clue count")
 
 def find_incorrect_cells(board, solution):
     incorrect = []

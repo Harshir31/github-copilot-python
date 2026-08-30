@@ -47,6 +47,56 @@ def test_fill_board_creates_a_valid_solution():
             board[row][col] = value
 
 
+def test_count_solutions_returns_one_for_a_completed_board_without_mutating_it():
+    board = [
+        [5, 3, 4, 6, 7, 8, 9, 1, 2],
+        [6, 7, 2, 1, 9, 5, 3, 4, 8],
+        [1, 9, 8, 3, 4, 2, 5, 6, 7],
+        [8, 5, 9, 7, 6, 1, 4, 2, 3],
+        [4, 2, 6, 8, 5, 3, 7, 9, 1],
+        [7, 1, 3, 9, 2, 4, 8, 5, 6],
+        [9, 6, 1, 5, 3, 7, 2, 8, 4],
+        [2, 8, 7, 4, 1, 9, 6, 3, 5],
+        [3, 4, 5, 2, 8, 6, 1, 7, 9],
+    ]
+    original = sudoku_logic.deep_copy(board)
+
+    assert sudoku_logic.count_solutions(board) == 1
+    assert board == original
+
+
+def test_count_solutions_stops_at_two_for_an_empty_board():
+    board = sudoku_logic.create_empty_board()
+    original = sudoku_logic.deep_copy(board)
+
+    assert sudoku_logic.count_solutions(board) == 2
+    assert board == original
+
+
+def test_count_solutions_returns_zero_for_an_invalid_board():
+    board = sudoku_logic.create_empty_board()
+    board[0][0] = 5
+    board[0][1] = 5
+
+    assert sudoku_logic.count_solutions(board) == 0
+
+
+def test_count_solutions_returns_zero_for_duplicate_in_column():
+    board = sudoku_logic.create_empty_board()
+    board[0][0] = 5
+    board[1][0] = 5
+
+    assert sudoku_logic.count_solutions(board) == 0
+
+
+def test_count_solutions_returns_zero_for_duplicate_in_box():
+    board = sudoku_logic.create_empty_board()
+    board[0][0] = 5
+    board[1][1] = 5
+
+    assert sudoku_logic.count_solutions(board) == 0
+
+
 def test_generate_puzzle_returns_default_clue_count_and_solution():
     puzzle, solution = sudoku_logic.generate_puzzle()
 
@@ -63,3 +113,4 @@ def test_generate_puzzle_returns_default_clue_count_and_solution():
         for row in range(sudoku_logic.SIZE)
         for col in range(sudoku_logic.SIZE)
     )
+    assert sudoku_logic.count_solutions(puzzle) == 1
